@@ -1,0 +1,22 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{924D37B1-4F17-BE41-9573-E2ABAE6702CA}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "PhysicsSphereProject",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		}
+	]
+}
