@@ -38,20 +38,25 @@ public:
 
 	float GetRadius();
 	
+	UFUNCTION(BlueprintCallable)
+	FVector GetBallVelocity() const;
 
-	FVector GetVelocity() const override;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ball Movement")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ball Specifications")
 	FVector velocity;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ball Specifications")
+	float mass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ball Specifications")
+	float radius;
+
 private:
-	void movingCollision(FVector Ball1Pos, FVector Ball2Pos, FVector Ball2Velocity, ABall* OtherBall);
 
 	void friction();
 	
 	float CosOfAngle(FVector AVector, FVector BVector);
-	
-	float mass;
 
-	float radius;
+	void movingCollision(FVector Ball1Pos, FVector Ball2Pos, FVector Ball2Velocity, ABall* OtherBall);
+
+	UStaticMeshComponent* SphereMesh;
 };
