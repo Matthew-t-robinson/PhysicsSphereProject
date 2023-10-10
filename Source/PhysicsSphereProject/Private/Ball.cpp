@@ -23,8 +23,6 @@ ABall::ABall()
     {
 	    SphereMesh->SetStaticMesh(SphereMeshAsset.Object);
     	SphereMesh->SetRelativeLocation(FVector(0.f,0.f,-radius));
-    	float scale = radius / 50;
-    	SphereMesh->SetWorldScale3D(FVector(scale));
     }
 }
 
