@@ -7,6 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "CollisionPlane.generated.h"
 
+class UBoxComponent;
 UCLASS()
 class PHYSICSSPHEREPROJECT_API ACollisionPlane : public AActor
 {
@@ -32,5 +33,9 @@ private:
 
 	float CosOfAngle(FVector AVector, FVector BVector);
 	float LengthOfVector(FVector Vector);
+	FVector GetNormal(FVector A, FVector B, FVector C);
+	float DotProduct(FVector A, FVector B);
 
+	UBoxComponent* point1;
+	UBoxComponent* point2;
 };

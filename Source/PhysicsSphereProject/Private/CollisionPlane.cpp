@@ -4,6 +4,8 @@
 #include "CollisionPlane.h"
 #include <cmath>
 
+#include "Components/BoxComponent.h"
+
 // Sets default values
 ACollisionPlane::ACollisionPlane()
 {
@@ -17,18 +19,33 @@ ACollisionPlane::ACollisionPlane()
 
 	PlaneMesh = CreateDefaultSubobject<UStaticMeshComponent>("VisualRepresentation");
 	PlaneMesh->SetupAttachment(RootComponent);
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> PlaneMeshAsset(TEXT("/Game/StarterContent/Shapes/Shape_Plane.Shape_Plane"));
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeMeshAsset(TEXT("/Game/StarterContent/Shapes/Shape_Plane.Shape_Plane"));
-
-	if (CubeMeshAsset.Succeeded())
+	if (PlaneMeshAsset.Succeeded())
 	{
-		PlaneMesh->SetStaticMesh(CubeMeshAsset.Object);
+		PlaneMesh->SetStaticMesh(PlaneMeshAsset.Object);
+		PlaneMesh->SetRelativeLocation(FVector(0.0f,0.0f, -0.0f));
+		PlaneMesh->SetWorldScale3D(FVector(1.f));
 	}
+
+	point1 = CreateDefaultSubobject<UBoxComponent>("point1");
+	point1->SetupAttachment(PlaneMesh);
+	point1->SetWorldScale3D(FVector(0.01f));
+	point1->SetRelativeLocation(FVector(-1.f,0.0f,0.f));
+
+	point2 = CreateDefaultSubobject<UBoxComponent>("point2");
+	point2->SetupAttachment(PlaneMesh);
+	point2->SetWorldScale3D(FVector(0.01f));
+	point2->SetRelativeLocation(FVector(0.0f,1.f,0.f));
 }
 
 void ACollisionPlane::Collision(ABall* Ball)
 {
-	FVector Normal = GetActorUpVector();
+	const auto a = point1->GetComponentLocation();
+	const auto b = point2->GetComponentLocation();
+	const auto c = GetActorLocation();
+	FVector Normal = GetNormal(a, b, c);
+	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("%f,%f,%f = Normal"), Normal.X, Normal.Y, Normal.Z));
 	FVector BallVelocity = Ball->GetBallVelocity();
 	FVector PlaneLocation = GetActorLocation();
 	FVector BallLocation = Ball->GetActorLocation();
@@ -44,8 +61,9 @@ void ACollisionPlane::Collision(ABall* Ball)
 	{
 		if (acos(CosOfAngleS)< (PI/2))
 		{
-			Ball->SetVelocity(BallVelocity - FVector{0.0f,0.0f, BallVelocity.Z * 2});
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("COLLIDING"));
+			float dotProduct = DotProduct(BallVelocity, Normal);
+
+			Ball->SetVelocity(FVector(0.f));
 		}
 	}
 	
@@ -55,7 +73,6 @@ void ACollisionPlane::Collision(ABall* Ball)
 void ACollisionPlane::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -76,5 +93,23 @@ float ACollisionPlane::CosOfAngle(FVector AVector, FVector BVector)
 float ACollisionPlane::LengthOfVector(FVector Vector)
 {
 	return sqrt(pow(Vector.X, 2) + pow(Vector.Y, 2) + pow(Vector.Z, 2));
+}
+
+FVector ACollisionPlane::GetNormal(FVector A, FVector B, FVector C)
+{
+	FVector D = B - C;
+	FVector E = A - C;
+	float NormalX = (D.Y * E.Z) - (D.Z * E.Y);
+	float NormalY = (D.Z * E.X) - (D.X * E.Z);
+	float NormalZ = (D.X * E.Y) - (D.Y * E.X);
+	return FVector(NormalX, NormalY, NormalZ);
+}
+
+float ACollisionPlane::DotProduct(FVector A, FVector B)
+{
+	float ALength = LengthOfVector(A);
+	float BLength = LengthOfVector(B);
+	float Angle = CosOfAngle(A,B);
+	return ALength * BLength * Angle;
 }
 
