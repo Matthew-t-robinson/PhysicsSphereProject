@@ -4,6 +4,7 @@
 #include "CollisionPlane.h"
 #include <cmath>
 
+#include "VectorTypes.h"
 #include "Components/BoxComponent.h"
 
 // Sets default values
@@ -45,7 +46,6 @@ void ACollisionPlane::Collision(ABall* Ball)
 	const auto b = point2->GetComponentLocation();
 	const auto c = GetActorLocation();
 	FVector Normal = GetNormal(a, b, c);
-	GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("%f,%f,%f = Normal"), Normal.X, Normal.Y, Normal.Z));
 	FVector BallVelocity = Ball->GetBallVelocity();
 	FVector PlaneLocation = GetActorLocation();
 	FVector BallLocation = Ball->GetActorLocation();
@@ -57,13 +57,19 @@ void ACollisionPlane::Collision(ABall* Ball)
 	float CosOfAngleS = CosOfAngle(BallVelocity, -Normal);
 	float VCLength = (d - Ball->GetRadius()) / CosOfAngleS;
 	float VLength = LengthOfVector(BallVelocity);
+	DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + Normal, FColor::Blue);
 	if (VCLength <= VLength)
 	{
-		if (acos(CosOfAngleS)< (PI/2))
+		if (acos(CosOfAngleS) < (PI/2))
 		{
+		
+			//GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("HIT")));
 			float dotProduct = DotProduct(BallVelocity, Normal);
-
-			Ball->SetVelocity(FVector(0.f));
+			FVector velocityUnitVector= (Ball->GetBallVelocity() / VLength);
+			FVector newVelocityUnitVector = (2 *Normal) * DotProduct(Normal, -velocityUnitVector) + velocityUnitVector;
+			FVector NewVelocity = newVelocityUnitVector * VLength;
+			//FVector NewVelocity = BallVelocity - ((2 * Normal) * DotProduct(BallVelocity, Normal));
+			Ball->SetVelocity(NewVelocity);
 		}
 	}
 	
@@ -102,14 +108,13 @@ FVector ACollisionPlane::GetNormal(FVector A, FVector B, FVector C)
 	float NormalX = (D.Y * E.Z) - (D.Z * E.Y);
 	float NormalY = (D.Z * E.X) - (D.X * E.Z);
 	float NormalZ = (D.X * E.Y) - (D.Y * E.X);
-	return FVector(NormalX, NormalY, NormalZ);
+	FVector Norm (NormalX, NormalY, NormalZ);
+	Norm = Norm / LengthOfVector(Norm);
+	return Norm;
 }
 
 float ACollisionPlane::DotProduct(FVector A, FVector B)
 {
-	float ALength = LengthOfVector(A);
-	float BLength = LengthOfVector(B);
-	float Angle = CosOfAngle(A,B);
-	return ALength * BLength * Angle;
+	return (A.X * B.X) + (A.Y * B.Y) + (A.Z * B.Z);
 }
 

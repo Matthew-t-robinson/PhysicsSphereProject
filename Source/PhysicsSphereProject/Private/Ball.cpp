@@ -32,8 +32,7 @@ void ABall::BeginPlay()
 	Super::BeginPlay();
 	SphereComponent->SetSphereRadius(radius);
 	SphereMesh->SetRelativeLocation(FVector(0.f,0.f,-radius));
-	float scale = radius / 50;
-	SphereMesh->SetWorldScale3D(FVector(scale));
+	SphereMesh->SetWorldScale3D(FVector(radius / 50));
 }
 
 // Called every frame
@@ -49,6 +48,7 @@ void ABall::Collision(ABall* OtherBall)
 	FVector ball2Position = OtherBall->GetActorLocation();
 	FVector ball2Velocity = OtherBall->GetBallVelocity();
 	float distance = sqrt(pow(ball1Position.X - ball2Position.X, 2) + pow(ball1Position.Y - ball2Position.Y, 2) + pow(ball1Position.Z - ball2Position.Z, 2));
+	float VelocityLength = sqrt(pow(velocity.X, 2) + pow(velocity.Y, 2) + pow(velocity.Z, 2));
 	if (((abs(velocity.X) > 0.0001f || abs(velocity.Y) > 0.0001f || abs(velocity.Z) > 0.0001f) && (abs(ball2Velocity.X) > 0.0001f || abs(ball2Velocity.Y) > 0.0001f || abs(ball2Velocity.Z) > 0.0001f)) && distance >= radius + OtherBall->GetRadius())
 	{
 		movingCollision(ball1Position, ball2Position, ball2Velocity, OtherBall);
@@ -64,11 +64,9 @@ void ABall::Collision(ABall* OtherBall)
 		{
 			float e = sqrt(pow(radius + OtherBall->GetRadius(), 2) - pow(d, 2));
 			float CollisionDistance = cosa * aLength - e;
-			if (CollisionDistance >= 0 && CollisionDistance <= sqrt((pow(velocity.X, 2) + pow(velocity.Y, 2) + pow(velocity.Z, 2))))
+			if (CollisionDistance >= 0 && CollisionDistance <= VelocityLength)
 			{
-				float length = sqrt(pow(ball2Position.X - ball1Position.X, 2) + pow(ball2Position.Y - ball1Position.Y, 2) + pow(ball2Position.Z - ball1Position.Z, 2));
-				FVector Fd{ (ball2Position.X - ball1Position.X) / length, (ball2Position.Y - ball1Position.Y) / length, (ball2Position.Z - ball1Position.Z) / length};
-				float VelocityLength = sqrt(pow(velocity.X, 2) + pow(velocity.Y, 2) + pow(velocity.Z, 2));
+				FVector Fd{ (ball2Position.X - ball1Position.X) / aLength, (ball2Position.Y - ball1Position.Y) / aLength, (ball2Position.Z - ball1Position.Z) / aLength};
 				float cosa2 = ((Fd.X * velocity.X) + (Fd.Y * velocity.Y) + (Fd.Z * velocity.Z)) / (VelocityLength);
 				float V2X = (cosa2 * sqrt(pow(velocity.X * mass,2) + pow(velocity.Y * mass, 2) + pow(velocity.Z * mass, 2)) * Fd.X) / OtherBall->GetMass();
 				float V2Y = (cosa2 * sqrt(pow(velocity.X * mass,2) + pow(velocity.Y * mass, 2) + pow(velocity.Z * mass, 2)) * Fd.Y) / OtherBall->GetMass();
@@ -90,7 +88,7 @@ void ABall::SetVelocity(FVector v)
 
 void ABall::MoveBall()
 {
-	SetActorLocation(GetActorLocation() += velocity);
+	SetActorLocation(GetActorLocation() + velocity);
 }
 
 float ABall::GetMass()
